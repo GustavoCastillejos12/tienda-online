@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: tienda-online
+    env: node
+    buildCommand: npm install
+    startCommand: node src/app.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: HOST
+        value: 0.0.0.0
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tienda_db
+          property: connectionString
+
+databases:
+  - name: tienda_db
+    databaseName: tienda_online
+    user: admin 
