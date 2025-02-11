@@ -23,5 +23,6 @@ if (process.env.DATABASE_URL) {
 }
 
 module.exports = {
-    query: (text, params) => pool.query(text, params)
+    query: (text, params) => pool.query(text, params),
+    pool
 }; 

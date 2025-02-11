@@ -10,8 +10,8 @@ router.post('/register', async (req, res) => {
         const { name, email, password } = req.body;
         
         // Verificar si el usuario ya existe
-        const [existingUsers] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-        if (existingUsers.length > 0) {
+        const existingUser = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (existingUser.rows.length > 0) {
             return res.status(400).json({ message: 'El correo electrónico ya está registrado' });
         }
 
@@ -19,20 +19,20 @@ router.post('/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Insertar nuevo usuario
-        const [result] = await db.query(
-            'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
+        const result = await db.query(
+            'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id',
             [name, email, hashedPassword]
         );
 
         // Obtener el usuario recién creado incluyendo su rol
-        const [newUser] = await db.query(
-            'SELECT id, name, email, role FROM users WHERE id = ?',
-            [result.insertId]
+        const newUser = await db.query(
+            'SELECT id, name, email, role FROM users WHERE id = $1',
+            [result.rows[0].id]
         );
 
         // Generar token
         const token = jwt.sign(
-            { userId: result.insertId },
+            { userId: result.rows[0].id },
             process.env.JWT_SECRET || 'your-secret-key',
             { expiresIn: '24h' }
         );
@@ -40,7 +40,7 @@ router.post('/register', async (req, res) => {
         res.status(201).json({
             message: 'Usuario registrado exitosamente',
             token,
-            user: newUser[0]
+            user: newUser.rows[0]
         });
     } catch (error) {
         console.error(error);
@@ -54,12 +54,12 @@ router.post('/login', async (req, res) => {
         const { email, password } = req.body;
 
         // Buscar usuario
-        const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-        if (users.length === 0) {
+        const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (result.rows.length === 0) {
             return res.status(401).json({ message: 'Credenciales inválidas' });
         }
 
-        const user = users[0];
+        const user = result.rows[0];
 
         // Verificar contraseña
         const isValidPassword = await bcrypt.compare(password, user.password);
@@ -99,16 +99,16 @@ router.get('/verify', async (req, res) => {
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-        const [users] = await db.query(
-            'SELECT id, name, email, role FROM users WHERE id = ?', 
+        const result = await db.query(
+            'SELECT id, name, email, role FROM users WHERE id = $1', 
             [decoded.userId]
         );
         
-        if (users.length === 0) {
+        if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
 
-        res.json({ user: users[0] });
+        res.json({ user: result.rows[0] });
     } catch (error) {
         console.error(error);
         res.status(401).json({ message: 'Token inválido' });

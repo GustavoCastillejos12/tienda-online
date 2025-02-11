@@ -22,14 +22,14 @@ const auth = async (req, res, next) => {
 // Obtener el carrito del usuario
 router.get('/', auth, async (req, res) => {
     try {
-        const [cartItems] = await db.query(`
+        const result = await db.query(`
             SELECT c.*, p.name, p.price, p.image 
             FROM cart c 
             JOIN products p ON c.product_id = p.id 
-            WHERE c.user_id = ?
+            WHERE c.user_id = $1
         `, [req.userId]);
         
-        res.json(cartItems);
+        res.json(result.rows);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error en el servidor' });
@@ -42,31 +42,31 @@ router.post('/', auth, async (req, res) => {
         const { productId, quantity } = req.body;
 
         // Verificar stock disponible
-        const [products] = await db.query('SELECT stock FROM products WHERE id = ?', [productId]);
-        if (products.length === 0) {
+        const productResult = await db.query('SELECT stock FROM products WHERE id = $1', [productId]);
+        if (productResult.rows.length === 0) {
             return res.status(404).json({ message: 'Producto no encontrado' });
         }
 
-        if (products[0].stock < quantity) {
+        if (productResult.rows[0].stock < quantity) {
             return res.status(400).json({ message: 'Stock insuficiente' });
         }
 
         // Verificar si el producto ya está en el carrito
-        const [existingItems] = await db.query(
-            'SELECT * FROM cart WHERE user_id = ? AND product_id = ?',
+        const existingResult = await db.query(
+            'SELECT * FROM cart WHERE user_id = $1 AND product_id = $2',
             [req.userId, productId]
         );
 
-        if (existingItems.length > 0) {
+        if (existingResult.rows.length > 0) {
             // Actualizar cantidad
             await db.query(
-                'UPDATE cart SET quantity = quantity + ? WHERE user_id = ? AND product_id = ?',
+                'UPDATE cart SET quantity = quantity + $1 WHERE user_id = $2 AND product_id = $3',
                 [quantity, req.userId, productId]
             );
         } else {
             // Insertar nuevo item
             await db.query(
-                'INSERT INTO cart (user_id, product_id, quantity) VALUES (?, ?, ?)',
+                'INSERT INTO cart (user_id, product_id, quantity) VALUES ($1, $2, $3)',
                 [req.userId, productId, quantity]
             );
         }
@@ -85,21 +85,21 @@ router.put('/:productId', auth, async (req, res) => {
         const productId = req.params.productId;
 
         // Verificar stock disponible
-        const [products] = await db.query('SELECT stock FROM products WHERE id = ?', [productId]);
-        if (products.length === 0) {
+        const productResult = await db.query('SELECT stock FROM products WHERE id = $1', [productId]);
+        if (productResult.rows.length === 0) {
             return res.status(404).json({ message: 'Producto no encontrado' });
         }
 
-        if (products[0].stock < quantity) {
+        if (productResult.rows[0].stock < quantity) {
             return res.status(400).json({ message: 'Stock insuficiente' });
         }
 
-        const [result] = await db.query(
-            'UPDATE cart SET quantity = ? WHERE user_id = ? AND product_id = ?',
+        const result = await db.query(
+            'UPDATE cart SET quantity = $1 WHERE user_id = $2 AND product_id = $3',
             [quantity, req.userId, productId]
         );
 
-        if (result.affectedRows === 0) {
+        if (result.rowCount === 0) {
             return res.status(404).json({ message: 'Item no encontrado en el carrito' });
         }
 
@@ -113,12 +113,12 @@ router.put('/:productId', auth, async (req, res) => {
 // Eliminar item del carrito
 router.delete('/:productId', auth, async (req, res) => {
     try {
-        const [result] = await db.query(
-            'DELETE FROM cart WHERE user_id = ? AND product_id = ?',
+        const result = await db.query(
+            'DELETE FROM cart WHERE user_id = $1 AND product_id = $2',
             [req.userId, req.params.productId]
         );
 
-        if (result.affectedRows === 0) {
+        if (result.rowCount === 0) {
             return res.status(404).json({ message: 'Item no encontrado en el carrito' });
         }
 
@@ -132,7 +132,7 @@ router.delete('/:productId', auth, async (req, res) => {
 // Vaciar carrito
 router.delete('/', auth, async (req, res) => {
     try {
-        await db.query('DELETE FROM cart WHERE user_id = ?', [req.userId]);
+        await db.query('DELETE FROM cart WHERE user_id = $1', [req.userId]);
         res.json({ message: 'Carrito vaciado' });
     } catch (error) {
         console.error(error);

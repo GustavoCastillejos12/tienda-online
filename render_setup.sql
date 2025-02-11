@@ -1,14 +1,22 @@
--- Configuración inicial
-SET NAMES utf8mb4;
-SET FOREIGN_KEY_CHECKS = 0;
+-- Eliminar tipos ENUM si existen
+DROP TYPE IF EXISTS user_role CASCADE;
+DROP TYPE IF EXISTS product_status CASCADE;
+DROP TYPE IF EXISTS order_status CASCADE;
 
 -- Crear tipos ENUM
 CREATE TYPE user_role AS ENUM ('user', 'admin');
 CREATE TYPE product_status AS ENUM ('active', 'inactive');
 CREATE TYPE order_status AS ENUM ('pending', 'completed', 'cancelled');
 
+-- Eliminar tablas si existen
+DROP TABLE IF EXISTS order_items CASCADE;
+DROP TABLE IF EXISTS orders CASCADE;
+DROP TABLE IF EXISTS cart CASCADE;
+DROP TABLE IF EXISTS products CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
 -- Crear tablas
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
@@ -17,7 +25,7 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS products (
+CREATE TABLE products (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT,
@@ -28,7 +36,7 @@ CREATE TABLE IF NOT EXISTS products (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS cart (
+CREATE TABLE cart (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
@@ -36,7 +44,7 @@ CREATE TABLE IF NOT EXISTS cart (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS orders (
+CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id),
     total_amount DECIMAL(10,2) NOT NULL,
@@ -44,7 +52,7 @@ CREATE TABLE IF NOT EXISTS orders (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS order_items (
+CREATE TABLE order_items (
     id SERIAL PRIMARY KEY,
     order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
     product_id INTEGER NOT NULL REFERENCES products(id),
@@ -60,6 +68,4 @@ INSERT INTO users (name, email, password, role) VALUES
 
 INSERT INTO products (name, description, price, image, stock) VALUES 
 ('Smartphone Demo', 'Teléfono de demostración', 9999.99, '/images/products/phone-demo.jpg', 10),
-('Laptop Demo', 'Laptop de demostración', 19999.99, '/images/products/laptop-demo.jpg', 5);
-
-SET FOREIGN_KEY_CHECKS = 1; 
+('Laptop Demo', 'Laptop de demostración', 19999.99, '/images/products/laptop-demo.jpg', 5); 

@@ -12,9 +12,9 @@ const isAdmin = async (req, res, next) => {
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-        const [users] = await db.query('SELECT role FROM users WHERE id = ?', [decoded.userId]);
+        const result = await db.query('SELECT role FROM users WHERE id = $1', [decoded.userId]);
         
-        if (users.length === 0 || users[0].role !== 'admin') {
+        if (result.rows.length === 0 || result.rows[0].role !== 'admin') {
             return res.status(403).json({ message: 'Acceso denegado' });
         }
 
@@ -27,8 +27,8 @@ const isAdmin = async (req, res, next) => {
 // Obtener todos los productos
 router.get('/', async (req, res) => {
     try {
-        const [products] = await db.query('SELECT * FROM products');
-        res.json(products);
+        const result = await db.query('SELECT * FROM products');
+        res.json(result.rows);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error en el servidor' });
@@ -38,11 +38,11 @@ router.get('/', async (req, res) => {
 // Obtener un producto específico
 router.get('/:id', async (req, res) => {
     try {
-        const [products] = await db.query('SELECT * FROM products WHERE id = ?', [req.params.id]);
-        if (products.length === 0) {
+        const result = await db.query('SELECT * FROM products WHERE id = $1', [req.params.id]);
+        if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Producto no encontrado' });
         }
-        res.json(products[0]);
+        res.json(result.rows[0]);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error en el servidor' });
@@ -53,14 +53,14 @@ router.get('/:id', async (req, res) => {
 router.post('/', isAdmin, async (req, res) => {
     try {
         const { name, description, price, image, stock } = req.body;
-        const [result] = await db.query(
-            'INSERT INTO products (name, description, price, image, stock) VALUES (?, ?, ?, ?, ?)',
+        const result = await db.query(
+            'INSERT INTO products (name, description, price, image, stock) VALUES ($1, $2, $3, $4, $5) RETURNING id',
             [name, description, price, image, stock]
         );
         
         res.status(201).json({
             message: 'Producto creado exitosamente',
-            productId: result.insertId
+            productId: result.rows[0].id
         });
     } catch (error) {
         console.error(error);
@@ -72,12 +72,12 @@ router.post('/', isAdmin, async (req, res) => {
 router.put('/:id', isAdmin, async (req, res) => {
     try {
         const { name, description, price, image, stock } = req.body;
-        const [result] = await db.query(
-            'UPDATE products SET name = ?, description = ?, price = ?, image = ?, stock = ? WHERE id = ?',
+        const result = await db.query(
+            'UPDATE products SET name = $1, description = $2, price = $3, image = $4, stock = $5 WHERE id = $6',
             [name, description, price, image, stock, req.params.id]
         );
 
-        if (result.affectedRows === 0) {
+        if (result.rowCount === 0) {
             return res.status(404).json({ message: 'Producto no encontrado' });
         }
 
@@ -91,9 +91,9 @@ router.put('/:id', isAdmin, async (req, res) => {
 // Eliminar un producto (solo admin)
 router.delete('/:id', isAdmin, async (req, res) => {
     try {
-        const [result] = await db.query('DELETE FROM products WHERE id = ?', [req.params.id]);
+        const result = await db.query('DELETE FROM products WHERE id = $1', [req.params.id]);
         
-        if (result.affectedRows === 0) {
+        if (result.rowCount === 0) {
             return res.status(404).json({ message: 'Producto no encontrado' });
         }
 
