@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras - Tienda Online</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/theme.css">
+    <style>
+        .cart-item {
+            transition: all 0.3s ease;
+        }
+
+        .cart-item:hover {
+            transform: translateX(5px);
+        }
+
+        .remove-button {
+            transition: all 0.3s ease;
+        }
+
+        .remove-button:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Botón de Tema -->
+    <button onclick="toggleTheme()" class="theme-toggle">
+        <!-- Ícono Sol (tema claro) -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <!-- Ícono Luna (tema oscuro) -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 block dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+    </button>
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-8">
+                    <a href="/" class="text-xl font-bold text-gray-800 hover:text-purple-600 transition-colors duration-300">Tienda Online</a>
+                    <div class="hidden md:flex items-center space-x-8">
+                        <a href="/" class="nav-link">Inicio</a>
+                        <a href="/productos" class="nav-link">Productos</a>
+                        <a href="/#about" class="nav-link">Nosotros</a>
+                    </div>
+                </div>
+                <div id="auth-buttons" class="flex items-center space-x-2">
+                    <a href="/login" class="text-gray-600 hover:text-gray-900">Iniciar Sesión</a>
+                    <a href="/registro" class="ml-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Registrarse</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <main class="max-w-6xl mx-auto px-4 py-8">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">Tu Carrito de Compras</h1>
+            <p class="text-gray-600" id="cart-status">Cargando productos...</p>
+        </div>
+
+        <!-- Lista de Productos en el Carrito -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div id="cart-items" class="space-y-4">
+                <!-- Los items del carrito se cargarán dinámicamente aquí -->
+            </div>
+
+            <!-- Resumen del Carrito -->
+            <div id="cart-summary" class="mt-8 pt-8 border-t border-gray-200">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-lg font-semibold">Subtotal:</span>
+                    <span id="subtotal" class="text-lg">$0.00</span>
+                </div>
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-lg font-semibold">IVA (16%):</span>
+                    <span id="iva" class="text-lg">$0.00</span>
+                </div>
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-xl font-bold">Total:</span>
+                    <span id="total" class="text-xl font-bold">$0.00</span>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="flex justify-between items-center">
+                    <a href="/productos" class="px-6 py-3 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition duration-300">
+                        Comprar Más
+                    </a>
+                    <button onclick="proceedToCheckout()" class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300">
+                        Pagar Ahora
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Tu Tienda Online</h3>
+                    <p class="text-gray-400">
+                        Ofreciendo los mejores productos y servicios desde 2024.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Enlaces Rápidos</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/" class="text-gray-400 hover:text-white">Inicio</a></li>
+                        <li><a href="/productos" class="text-gray-400 hover:text-white">Productos</a></li>
+                        <li><a href="/#about" class="text-gray-400 hover:text-white">Nosotros</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Contacto</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li>Email: info@tutienda.com</li>
+                        <li>Teléfono: (123) 456-7890</li>
+                        <li>Dirección: Calle Principal #123</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 Tu Tienda Online. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/js/cart.js"></script>
+    <script src="/js/theme.js"></script>
+</body>
+</html> 

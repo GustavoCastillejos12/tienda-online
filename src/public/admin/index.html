@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Tienda Online</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/theme.css">
+</head>
+<body>
+    <!-- Botón de Tema -->
+    <button onclick="toggleTheme()" class="theme-toggle text-white p-2 rounded-full hover:bg-white/10">
+        <!-- Ícono Sol (tema claro) -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <!-- Ícono Luna (tema oscuro) -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 block dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+    </button>
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <a href="/admin" class="text-xl font-bold text-gray-800">Panel de Administración</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="adminName" class="text-gray-600"></span>
+                    <button onclick="logout()" class="text-red-600 hover:text-red-800">Cerrar Sesión</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Estadísticas -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="card p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold text-primary">Total de Ventas</h3>
+                <p id="totalSales" class="text-3xl font-bold text-accent">$0.00</p>
+            </div>
+            <div class="card p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold text-primary">Productos Activos</h3>
+                <p id="activeProducts" class="text-3xl font-bold text-accent">0</p>
+            </div>
+            <div class="card p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold text-primary">Órdenes Pendientes</h3>
+                <p id="pendingOrders" class="text-3xl font-bold text-accent">0</p>
+            </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Gestión de Productos</h2>
+            <div class="space-x-4">
+                <button onclick="generateReport()" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                    Generar Reporte PDF
+                </button>
+                <button onclick="showAddProductModal()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    Agregar Producto
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabla de Productos -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="productsTableBody" class="bg-white divide-y divide-gray-200">
+                    <!-- Los productos se cargarán dinámicamente aquí -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Agregar/Editar Producto -->
+    <div id="productModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white w-full max-w-md p-6 rounded-lg shadow-xl">
+                <h3 id="modalTitle" class="text-xl font-bold text-gray-900 mb-4"></h3>
+                <form id="productForm" class="space-y-4">
+                    <input type="hidden" id="productId">
+                    <div>
+                        <label for="productName" class="block text-sm font-medium text-gray-700">Nombre</label>
+                        <input type="text" id="productName" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label for="productDescription" class="block text-sm font-medium text-gray-700">Descripción</label>
+                        <textarea id="productDescription" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div>
+                        <label for="productPrice" class="block text-sm font-medium text-gray-700">Precio</label>
+                        <input type="number" id="productPrice" required min="0" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label for="productStock" class="block text-sm font-medium text-gray-700">Stock</label>
+                        <input type="number" id="productStock" required min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label for="productImage" class="block text-sm font-medium text-gray-700">Imagen del producto</label>
+                        <div class="mt-1 flex items-center space-x-4">
+                            <input type="file" 
+                                   id="productImage" 
+                                   accept="image/*"
+                                   required 
+                                   class="mt-1 block w-full text-sm text-gray-500
+                                          file:mr-4 file:py-2 file:px-4
+                                          file:rounded-md file:border-0
+                                          file:text-sm file:font-semibold
+                                          file:bg-blue-50 file:text-blue-700
+                                          hover:file:bg-blue-100">
+                            <img id="imagePreview" src="" alt="Vista previa" class="hidden h-20 w-20 object-cover rounded-md">
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button type="button" onclick="hideProductModal()" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                            Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/admin.js"></script>
+    <script src="/js/theme.js"></script>
+</body>
+</html> 
