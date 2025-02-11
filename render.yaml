@@ -17,6 +17,8 @@ services:
         fromDatabase:
           name: tienda_db
           property: connectionString
+      - key: FRONTEND_URL
+        value: https://tienda-online.onrender.com
 
 databases:
   - name: tienda_db

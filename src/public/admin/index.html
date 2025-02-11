@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="/css/theme.css">
 </head>
-<body>
+<body class="bg-gray-100">
     <!-- Botón de Tema -->
     <button onclick="toggleTheme()" class="theme-toggle text-white p-2 rounded-full hover:bg-white/10">
         <!-- Ícono Sol (tema claro) -->
@@ -38,51 +38,97 @@
 
     <!-- Contenido Principal -->
     <div class="max-w-7xl mx-auto px-4 py-8">
-        <!-- Estadísticas -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="card p-6 rounded-lg shadow-md">
-                <h3 class="text-lg font-semibold text-primary">Total de Ventas</h3>
-                <p id="totalSales" class="text-3xl font-bold text-accent">$0.00</p>
-            </div>
-            <div class="card p-6 rounded-lg shadow-md">
-                <h3 class="text-lg font-semibold text-primary">Productos Activos</h3>
-                <p id="activeProducts" class="text-3xl font-bold text-accent">0</p>
-            </div>
-            <div class="card p-6 rounded-lg shadow-md">
-                <h3 class="text-lg font-semibold text-primary">Órdenes Pendientes</h3>
-                <p id="pendingOrders" class="text-3xl font-bold text-accent">0</p>
+        <!-- Tabs de navegación -->
+        <div class="border-b border-gray-200 mb-8">
+            <nav class="-mb-px flex space-x-8">
+                <button onclick="showTab('dashboard')" class="tab-button active border-b-2 border-transparent py-4 px-1 text-sm font-medium">
+                    Dashboard
+                </button>
+                <button onclick="showTab('products')" class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-medium">
+                    Productos
+                </button>
+                <button onclick="showTab('users')" class="tab-button border-b-2 border-transparent py-4 px-1 text-sm font-medium">
+                    Usuarios
+                </button>
+            </nav>
+        </div>
+
+        <!-- Tab Dashboard -->
+        <div id="dashboard-tab" class="tab-content">
+            <!-- Estadísticas -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="card p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold text-primary">Total de Ventas</h3>
+                    <p id="totalSales" class="text-3xl font-bold text-accent">$0.00</p>
+                </div>
+                <div class="card p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold text-primary">Productos Activos</h3>
+                    <p id="activeProducts" class="text-3xl font-bold text-accent">0</p>
+                </div>
+                <div class="card p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold text-primary">Órdenes Pendientes</h3>
+                    <p id="pendingOrders" class="text-3xl font-bold text-accent">0</p>
+                </div>
             </div>
         </div>
 
-        <!-- Acciones -->
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Gestión de Productos</h2>
-            <div class="space-x-4">
-                <button onclick="generateReport()" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-                    Generar Reporte PDF
-                </button>
-                <button onclick="showAddProductModal()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                    Agregar Producto
-                </button>
+        <!-- Tab Productos -->
+        <div id="products-tab" class="tab-content hidden">
+            <!-- Acciones de Productos -->
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Gestión de Productos</h2>
+                <div class="space-x-4">
+                    <button onclick="generateReport()" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                        Generar Reporte PDF
+                    </button>
+                    <button onclick="showAddProductModal()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        Agregar Producto
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabla de Productos -->
+            <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Los productos se cargarán dinámicamente aquí -->
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <!-- Tabla de Productos -->
-        <div class="bg-white shadow-md rounded-lg overflow-hidden">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="productsTableBody" class="bg-white divide-y divide-gray-200">
-                    <!-- Los productos se cargarán dinámicamente aquí -->
-                </tbody>
-            </table>
+        <!-- Tab Usuarios -->
+        <div id="users-tab" class="tab-content hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Gestión de Usuarios</h2>
+            </div>
+
+            <!-- Tabla de Usuarios -->
+            <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de Registro</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Los usuarios se cargarán dinámicamente aquí -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -110,20 +156,8 @@
                         <input type="number" id="productStock" required min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label for="productImage" class="block text-sm font-medium text-gray-700">Imagen del producto</label>
-                        <div class="mt-1 flex items-center space-x-4">
-                            <input type="file" 
-                                   id="productImage" 
-                                   accept="image/*"
-                                   required 
-                                   class="mt-1 block w-full text-sm text-gray-500
-                                          file:mr-4 file:py-2 file:px-4
-                                          file:rounded-md file:border-0
-                                          file:text-sm file:font-semibold
-                                          file:bg-blue-50 file:text-blue-700
-                                          hover:file:bg-blue-100">
-                            <img id="imagePreview" src="" alt="Vista previa" class="hidden h-20 w-20 object-cover rounded-md">
-                        </div>
+                        <label for="productImage" class="block text-sm font-medium text-gray-700">Imagen</label>
+                        <input type="file" id="productImage" accept="image/*" class="mt-1 block w-full text-sm text-gray-500">
                     </div>
                     <div class="flex justify-end space-x-3 mt-6">
                         <button type="button" onclick="hideProductModal()" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">

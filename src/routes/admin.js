@@ -7,6 +7,65 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
+// Middleware de autenticación para administradores
+const isAdmin = async (req, res, next) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ message: 'No autorizado' });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+        const result = await db.query('SELECT role FROM users WHERE id = $1', [decoded.userId]);
+        
+        if (result.rows.length === 0 || result.rows[0].role !== 'admin') {
+            return res.status(403).json({ message: 'Acceso denegado' });
+        }
+
+        req.userId = decoded.userId;
+        next();
+    } catch (error) {
+        res.status(401).json({ message: 'Token inválido' });
+    }
+};
+
+// Obtener todos los usuarios
+router.get('/users', isAdmin, async (req, res) => {
+    try {
+        const result = await db.query('SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC');
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error al obtener usuarios:', error);
+        res.status(500).json({ message: 'Error al obtener usuarios' });
+    }
+});
+
+// Actualizar rol de usuario
+router.put('/users/:id/role', isAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { role } = req.body;
+
+        if (!['admin', 'user'].includes(role)) {
+            return res.status(400).json({ message: 'Rol inválido' });
+        }
+
+        const result = await db.query(
+            'UPDATE users SET role = $1 WHERE id = $2 RETURNING id, name, email, role',
+            [role, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Error al actualizar rol:', error);
+        res.status(500).json({ message: 'Error al actualizar rol' });
+    }
+});
+
 // Configuración de multer para subida de imágenes
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -47,28 +106,6 @@ const upload = multer({
     }
 });
 
-// Middleware de autenticación para administradores
-const isAdmin = async (req, res, next) => {
-    try {
-        const token = req.headers.authorization?.split(' ')[1];
-        if (!token) {
-            return res.status(401).json({ message: 'No autorizado' });
-        }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-        const [users] = await db.query('SELECT role FROM users WHERE id = ?', [decoded.userId]);
-        
-        if (users.length === 0 || users[0].role !== 'admin') {
-            return res.status(403).json({ message: 'Acceso denegado' });
-        }
-
-        req.userId = decoded.userId;
-        next();
-    } catch (error) {
-        res.status(401).json({ message: 'Token inválido' });
-    }
-};
-
 // Obtener datos del dashboard
 router.get('/dashboard', isAdmin, async (req, res) => {
     try {
@@ -107,8 +144,8 @@ router.get('/dashboard', isAdmin, async (req, res) => {
 // Obtener todos los productos (incluyendo inactivos)
 router.get('/products', isAdmin, async (req, res) => {
     try {
-        const [products] = await db.query('SELECT * FROM products WHERE created_by = ?', [req.userId]);
-        res.json(products);
+        const result = await db.query('SELECT * FROM products WHERE created_by = $1', [req.userId]);
+        res.json(result.rows);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error en el servidor' });
@@ -300,6 +337,44 @@ router.get('/reports/sales', isAdmin, async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error al generar el reporte' });
+    }
+});
+
+// Obtener estadísticas del dashboard
+router.get('/stats', isAdmin, async (req, res) => {
+    try {
+        // Obtener total de ventas
+        const salesResult = await db.query(`
+            SELECT COALESCE(SUM(total_amount), 0) as total_sales 
+            FROM orders 
+            WHERE order_status = 'completed'
+        `);
+        const totalSales = parseFloat(salesResult.rows[0].total_sales);
+
+        // Obtener productos activos
+        const productsResult = await db.query(`
+            SELECT COUNT(*) as active_products 
+            FROM products 
+            WHERE status = 'active' AND stock > 0
+        `);
+        const activeProducts = parseInt(productsResult.rows[0].active_products);
+
+        // Obtener órdenes pendientes
+        const ordersResult = await db.query(`
+            SELECT COUNT(*) as pending_orders 
+            FROM orders 
+            WHERE order_status = 'pending'
+        `);
+        const pendingOrders = parseInt(ordersResult.rows[0].pending_orders);
+
+        res.json({
+            totalSales,
+            activeProducts,
+            pendingOrders
+        });
+    } catch (error) {
+        console.error('Error al obtener estadísticas:', error);
+        res.status(500).json({ message: 'Error al obtener estadísticas' });
     }
 });
 
