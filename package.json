@@ -7,7 +7,7 @@
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
     "postinstall": "npm run build",
-    "build": "if not exist public\\uploads mkdir public\\uploads"
+    "build": "mkdir -p src/public/uploads/products"
   },
   "engines": {
     "node": ">=14.0.0"
