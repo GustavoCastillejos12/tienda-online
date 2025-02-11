@@ -21,4 +21,5 @@ services:
 databases:
   - name: tienda_db
     databaseName: tienda_online
-    user: admin 
+    plan: free
+    ipAllowList: [] # Permitir todas las IPs 

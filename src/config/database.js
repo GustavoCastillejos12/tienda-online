@@ -1,24 +1,27 @@
-const mysql = require('mysql2');
+const { Pool } = require('pg');
 require('dotenv').config();
 
 let pool;
 
 if (process.env.DATABASE_URL) {
-    // Configuración para Railway
-    pool = mysql.createPool(process.env.DATABASE_URL);
+    // Configuración para Render
+    pool = new Pool({
+        connectionString: process.env.DATABASE_URL,
+        ssl: {
+            rejectUnauthorized: false
+        }
+    });
 } else {
     // Configuración local
-    pool = mysql.createPool({
+    pool = new Pool({
+        user: process.env.DB_USER || 'postgres',
         host: process.env.DB_HOST || 'localhost',
-        user: process.env.DB_USER || 'root',
-        password: process.env.DB_PASSWORD || '',
         database: process.env.DB_NAME || 'tienda_online',
-        waitForConnections: true,
-        connectionLimit: 10,
-        queueLimit: 0
+        password: process.env.DB_PASSWORD || '',
+        port: process.env.DB_PORT || 5432,
     });
 }
 
-const promisePool = pool.promise();
-
-module.exports = promisePool; 
+module.exports = {
+    query: (text, params) => pool.query(text, params)
+}; 
