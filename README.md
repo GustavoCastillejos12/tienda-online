@@ -1,6 +1,12 @@
 # Tienda Online
 
-Aplicación web de comercio electrónico desarrollada con Node.js, Express y MySQL.
+Aplicación web de comercio electrónico desarrollada con Node.js, Express y PostgreSQL.
+
+## 🌐 Demo en Vivo
+
+Puedes ver una demostración de la interfaz en: [GitHub Pages](https://gustavocastillejos12.github.io/tienda-online/)
+
+**Nota:** La demo en GitHub Pages muestra solo la interfaz. Para funcionalidad completa (base de datos, autenticación), necesitas ejecutar el servidor localmente.
 
 ## Características
 

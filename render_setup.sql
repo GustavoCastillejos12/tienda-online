@@ -33,6 +33,7 @@ CREATE TABLE products (
     image VARCHAR(255),
     stock INTEGER NOT NULL DEFAULT 0,
     status product_status DEFAULT 'active',
+    created_by INTEGER REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -64,8 +65,8 @@ CREATE TABLE order_items (
 -- Insertar datos de demo
 INSERT INTO users (name, email, password, role) VALUES 
 ('Admin Demo', 'admin@demo.com', '$2a$10$EKGZHh7YhB9nzHQwxFB.0.9Pq1ULmVJBJUOYVpJ0KPAgbsXJZ0V0O', 'admin'),
-('Cliente Demo', 'cliente@demo.com', '$2a$10$EKGZHh7YhB9nzHQwxFB.0.9Pq1ULmVJBJUOYVpJ0KPAgbsXJZ0V0O', 'user');
+('Cliente Demo', 'cliente@demo.com', '$2a$10$EKGZHh7YhB9nzHQwxFB.0.9Pq1ULmVJBJUOYVpJ0KPAgbsXJZ0V0O', 'admin');
 
-INSERT INTO products (name, description, price, image, stock) VALUES 
-('Smartphone Demo', 'Teléfono de demostración', 9999.99, '/images/products/phone-demo.jpg', 10),
-('Laptop Demo', 'Laptop de demostración', 19999.99, '/images/products/laptop-demo.jpg', 5); 
+INSERT INTO products (name, description, price, image, stock, created_by) VALUES 
+('Smartphone Demo', 'Teléfono de demostración', 9999.99, '/images/products/phone-demo.jpg', 10, 1),
+('Laptop Demo', 'Laptop de demostración', 19999.99, '/images/products/laptop-demo.jpg', 5, 1); 
